@@ -78,3 +78,12 @@ func (c *CloudwatchLogsWrapper) handleRequests(ctx context.Context) {
 	}
 }
 ```
+
+## Integration tests
+If you want to try it without having to send the data to AWS, the integration
+tests are already written using [LocalStack](https://localstack.cloud/). This tool
+allows you to simulate real AWS services. To run the tests simply run:
+
+```text
+go test ./... --tags integration
+```
