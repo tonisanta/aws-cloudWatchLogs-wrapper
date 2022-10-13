@@ -48,7 +48,6 @@ var ErrTooManyLogsPerBatch = fmt.Errorf("to many logs per batch, maxValue: %d", 
 var ErrBatchSizeTooBig = fmt.Errorf("batch size too big, maxValue: %d", MaxBatchSize)
 var ErrInvalidSendAfter = fmt.Errorf("AWS restrictions: a batch of log events in a single request cannot span more than 24 hours")
 
-// TODO: retornar errors categoritazas
 func (options WrapperOptions) validate() error {
 	if options.logsPerBatch > MaxLogEventsPerBatch {
 		return ErrTooManyLogsPerBatch
