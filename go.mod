@@ -1,4 +1,4 @@
-module ClientCloudwatchLogs
+module wrappercloudwatchlogs
 
 go 1.19
 
