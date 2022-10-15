@@ -1,4 +1,4 @@
-module github.com/aws-cloudWatchLogs-wrapper
+module github.com/tonisanta/aws-cloudWatchLogs-wrapper
 
 go 1.19
 
