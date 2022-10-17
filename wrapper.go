@@ -158,7 +158,7 @@ func (c *CloudwatchLogsWrapper) sendToCloudwatch(ctx context.Context) {
 
 	start := time.Now()
 	putLogEventsOutput, err := c.client.PutLogEvents(ctx, &putLogsEvents)
-	c.metrics.AWSResponseTime.Observe(float64(time.Since(start).Milliseconds()))
+	c.metrics.AWSResponseTime.Observe(time.Since(start).Seconds())
 	if err != nil {
 		log.Printf("error while sending logs to cloudwatch: %s\n", err)
 		return

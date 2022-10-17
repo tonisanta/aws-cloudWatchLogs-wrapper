@@ -28,7 +28,7 @@ func New() *WrapperMetrics {
 	awsResponseTime := prometheus.NewHistogram(prometheus.HistogramOpts{
 		Namespace: metricsNamespace,
 		Name:      "aws_response_time",
-		Help:      "Elapsed time in milliseconds for put log events request to aws",
+		Help:      "Elapsed time in seconds for put log events request to aws",
 	})
 	prometheus.MustRegister(awsResponseTime)
 
