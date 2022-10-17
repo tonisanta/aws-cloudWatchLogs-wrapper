@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
+	"github.com/tonisanta/aws-cloudWatchLogs-wrapper/metrics"
 	"log"
 	"time"
 )
@@ -21,6 +22,7 @@ type CloudwatchLogsWrapper struct {
 	notifyClose       chan struct{}
 	closeDone         chan struct{}
 	tickerSendToAws   *time.Ticker
+	metrics           *metrics.WrapperMetrics
 }
 
 type CreateOperationsCloudwatch interface {
@@ -60,6 +62,7 @@ func New(ctx context.Context, client CreateOperationsCloudwatch, options *Wrappe
 		notifyClose:     make(chan struct{}),
 		closeDone:       make(chan struct{}),
 		tickerSendToAws: time.NewTicker(options.sendAfter),
+		metrics:         metrics.New(),
 	}
 
 	go clwWrapper.handleRequests(ctx)
@@ -134,7 +137,9 @@ func (c *CloudwatchLogsWrapper) getLenBuffer() uint {
 
 func (c *CloudwatchLogsWrapper) addLogToBuffer(logEvent types.InputLogEvent, sizeLog uint) {
 	c.bufferLogEvents = append(c.bufferLogEvents, logEvent)
+	c.metrics.LogsBuffered.Add(1)
 	c.currentBatchSize += sizeLog
+	c.metrics.BatchSize.Add(float64(sizeLog))
 }
 
 func (c *CloudwatchLogsWrapper) sendToCloudwatch(ctx context.Context) {
@@ -151,7 +156,9 @@ func (c *CloudwatchLogsWrapper) sendToCloudwatch(ctx context.Context) {
 		SequenceToken: c.lastSequenceToken,
 	}
 
+	start := time.Now()
 	putLogEventsOutput, err := c.client.PutLogEvents(ctx, &putLogsEvents)
+	c.metrics.AWSResponseTime.Observe(float64(time.Since(start).Milliseconds()))
 	if err != nil {
 		log.Printf("error while sending logs to cloudwatch: %s\n", err)
 		return
@@ -165,6 +172,8 @@ func (c *CloudwatchLogsWrapper) sendToCloudwatch(ctx context.Context) {
 	c.bufferLogEvents = c.bufferLogEvents[:0] // clear the buffer
 	c.lastSequenceToken = putLogEventsOutput.NextSequenceToken
 	c.tickerSendToAws.Reset(c.options.sendAfter) // to avoid re-sending after a short period since last time
+	c.metrics.LogsBuffered.Set(0)
+	c.metrics.BatchSize.Set(0)
 	log.Printf("logs uploaded succesfully\n")
 }
 
