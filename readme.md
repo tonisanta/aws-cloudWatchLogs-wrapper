@@ -87,3 +87,11 @@ allows you to simulate real AWS services. To run the tests simply run:
 ```text
 go test ./... --tags integration
 ```
+
+## Metrics
+This package is ready to publish some internal metrics to **Prometheus** out of
+the box. The main information is related with the number of items and size of the 
+batch. But also provides information about the response time when uploading the
+logs to AWS.
+
+![metrics](pictures/metrics.png)
